@@ -10,7 +10,7 @@ bin/
 *.dll
 *.so
 
-# CMake ÁÙÊ±ÎÄ¼þ
+# CMake ï¿½ï¿½Ê±ï¿½Ä¼ï¿½
 CMakeCache.txt
 cmake_install.cmake
 compile_commands.json
@@ -26,3 +26,14 @@ CMakeFiles/
 Thumbs.db
 
 .env
+
+# frontend
+frontend/node_modules/
+frontend/.vite/
+frontend/dist/
+
+# IDE
+.idea/
+
+# Claude
+CLAUDE.md
