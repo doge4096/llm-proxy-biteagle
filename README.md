@@ -16,7 +16,8 @@ C++ 实现的 LLM 请求转发代理，支持并发 + SSE 流式输出。
 ```bash
 # MSYS2 MinGW64 终端中（OpenSSL 已通过 pacman 安装）
 cmake -B build -G "Unix Makefiles"
-cmake --build build```
+cmake --build build
+```
 
 
 输出：`build/proxy.exe`
