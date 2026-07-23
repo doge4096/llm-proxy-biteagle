@@ -6,37 +6,20 @@ C++ 实现的 LLM 请求转发代理，支持并发 + SSE 流式输出。
 
 - **后端**：C++14、[cpp-httplib](https://github.com/yhirose/cpp-httplib) 0.50.1、[nlohmann/json](https://github.com/nlohmann/json)、OpenSSL、线程池
 - **前端**：Vite + React 19 + TypeScript + Tailwind CSS 4
-- **API**：DeepSeek（deepseek-v4-pro，启用 thinking）
+- **API**：DeepSeek（deepseek-v4-pro，启用 thinking）+ allama
 
-## 快速开始
 
 ### 1. 编译后端
 
-#### 方式一：CMake（推荐）
+#### CMake
 
 ```bash
 # MSYS2 MinGW64 终端中（OpenSSL 已通过 pacman 安装）
-cmake -B build -G "MSYS Makefiles"
+cmake -B build -G "Unix Makefiles"
 cmake --build build
 
-# 若用 vcpkg 的 OpenSSL，指定路径：
-# cmake -B build -G "MinGW Makefiles" -DOPENSSL_ROOT_DIR=<vcpkg-path>
-```
 
 输出：`build/proxy.exe`
-
-#### 方式二：手动 g++
-
-在 MSYS2 MinGW64 终端中：
-
-```bash
-g++ -D_WIN32_WINNT=0x0A00 -DCPPHTTPLIB_OPENSSL_SUPPORT -std=c++14 -Iinclude \
-    -static-libgcc -static-libstdc++ \
-    src/main.cpp \
-    -lssl -lcrypto \
-    -o proxy.exe \
-    -lws2_32 -lcrypt32 -lgdi32 -ladvapi32 -luser32 -lpthread
-```
 
 ### 2. 设置 API Key
 
@@ -77,6 +60,9 @@ npm run dev
 
 ![演示视频](assets/demo_video.gif)
 
+ 支持模型切换。
+
+![演示视频](assets/api_select.gif)
 ### 5. Docker 部署（一键启动）
 
 ```bash
@@ -154,5 +140,3 @@ data: [DONE]
 
 - [ ] Token 限流
 - [ ] 请求重试 + 熔断
-- [ ] 配置文件（端口、模型参数等）
-- [ ] 多模型/多厂商支持（OpenAI、Claude 等）
