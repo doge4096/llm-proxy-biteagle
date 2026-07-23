@@ -1,7 +1,9 @@
 import { useState, useRef, useEffect, useCallback, type FormEvent } from 'react'
 import { useSSE } from '../hooks/useSSE'
+import { useModels } from '../hooks/useModels'
 import type { Message } from '../hooks/useConversations'
 import ReasoningBlock from './ReasoningBlock'
+import MarkdownRenderer from './MarkdownRenderer'
 
 interface ChatWindowProps {
   messages: Message[]
@@ -14,6 +16,7 @@ export default function ChatWindow({ messages, onUpdateMessages }: ChatWindowPro
   const textareaRef = useRef<HTMLTextAreaElement>(null)
   const messagesRef = useRef(messages)
   messagesRef.current = messages
+  const { models, selectedId, setSelectedId } = useModels()
   const { streaming, error, sendMessage, abort } = useSSE()
 
   // 自动滚动到底部
@@ -74,9 +77,9 @@ export default function ChatWindow({ messages, onUpdateMessages }: ChatWindowPro
             ),
           )
         },
-      })
+      }, selectedId)
     },
-    [input, streaming, sendMessage, messages, onUpdateMessages],
+    [input, streaming, sendMessage, messages, onUpdateMessages, selectedId],
   )
 
   // Enter 发送，Shift+Enter 换行
@@ -107,9 +110,24 @@ export default function ChatWindow({ messages, onUpdateMessages }: ChatWindowPro
             <h1 className="text-lg font-bold text-white tracking-tight">
               LLM Proxy Playground
             </h1>
-            <p className="text-xs text-gray-500 mt-0.5">
-              deepseek-v4-pro · thinking: enabled · SSE stream
-            </p>
+            <div className="flex items-center gap-3 mt-0.5">
+              {/* 模型选择器 */}
+              <select
+                value={selectedId}
+                onChange={(e) => setSelectedId(e.target.value)}
+                disabled={streaming}
+                className="text-xs bg-gray-800 border border-gray-700 rounded-lg px-2.5 py-1 text-gray-300 focus:outline-none focus:ring-1 focus:ring-blue-500/50 disabled:opacity-50 cursor-pointer"
+              >
+                {models.map((m) => (
+                  <option key={m.id} value={m.id}>
+                    {m.name}
+                  </option>
+                ))}
+              </select>
+              <p className="text-xs text-gray-500">
+                SSE stream
+              </p>
+            </div>
           </div>
           {streaming && (
             <button
@@ -147,17 +165,23 @@ export default function ChatWindow({ messages, onUpdateMessages }: ChatWindowPro
                 <ReasoningBlock content={msg.reasoning} />
               )}
 
-              {/* 正文 */}
+              {/* 正文 — 助理用 Markdown 渲染，用户用纯文本 */}
               {msg.content ? (
-                <div className="whitespace-pre-wrap break-words">
-                  {msg.content}
-                  {msg.streaming && (
-                    <span className="inline-block w-2 h-4 bg-gray-400 ml-0.5 animate-pulse align-text-bottom" />
-                  )}
-                </div>
+                msg.role === 'assistant' ? (
+                  <MarkdownRenderer content={msg.content} />
+                ) : (
+                  <div className="whitespace-pre-wrap break-words">
+                    {msg.content}
+                  </div>
+                )
               ) : msg.streaming ? (
                 <span className="inline-block w-2 h-4 bg-gray-400 animate-pulse align-text-bottom" />
               ) : null}
+
+              {/* 流式光标 */}
+              {msg.streaming && msg.content && (
+                <span className="inline-block w-2 h-4 bg-gray-400 ml-0.5 animate-pulse align-text-bottom" />
+              )}
 
               {/* 错误提示 */}
               {msg.role === 'assistant' && !msg.streaming && error && (

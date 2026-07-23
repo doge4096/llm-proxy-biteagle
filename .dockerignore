@@ -1,0 +1,35 @@
+# Dependencies
+node_modules/
+frontend/node_modules/
+
+# Build artifacts
+build/
+bin/
+*.exe
+*.dll
+*.o
+*.obj
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Env
+.env
+.env.local
+
+# Git
+.git/
+.gitignore
+
+# Docs (不需要打进镜像)
+CLAUDE.md
+assets/
+*.md
+!README.md

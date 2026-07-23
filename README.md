@@ -12,10 +12,25 @@ C++ 实现的 LLM 请求转发代理，支持并发 + SSE 流式输出。
 
 ### 1. 编译后端
 
+#### 方式一：CMake（推荐）
+
+```bash
+# MSYS2 MinGW64 终端中（OpenSSL 已通过 pacman 安装）
+cmake -B build -G "MSYS Makefiles"
+cmake --build build
+
+# 若用 vcpkg 的 OpenSSL，指定路径：
+# cmake -B build -G "MinGW Makefiles" -DOPENSSL_ROOT_DIR=<vcpkg-path>
+```
+
+输出：`build/proxy.exe`
+
+#### 方式二：手动 g++
+
 在 MSYS2 MinGW64 终端中：
 
 ```bash
-g++ -D_WIN32_WINNT=0x0A00 -std=c++14 -Iinclude \
+g++ -D_WIN32_WINNT=0x0A00 -DCPPHTTPLIB_OPENSSL_SUPPORT -std=c++14 -Iinclude \
     -static-libgcc -static-libstdc++ \
     src/main.cpp \
     -lssl -lcrypto \
@@ -62,6 +77,20 @@ npm run dev
 
 ![演示视频](assets/demo_video.gif)
 
+### 5. Docker 部署（一键启动）
+
+```bash
+# 设置 API Key
+export DEEPSEEK_API_KEY="sk-your-key-here"
+
+# 构建并启动
+docker compose up -d
+
+# 浏览器打开 http://localhost:5173
+```
+
+架构：前端 nginx（:5173）→ 反向代理 `/chat` → 后端 proxy（:8080）→ DeepSeek API。
+
 ## API 接口
 
 ### POST `/chat/stream`（SSE 流式）
@@ -101,11 +130,15 @@ data: [DONE]
 ## 项目结构
 
 ```
-├── src/main.cpp              # 后端主程序
+├── src/main.cpp              # 后端主程序（跨平台 C++14）
 ├── include/
 │   ├── httplib.h             # cpp-httplib（header-only）
 │   └── json.hpp              # nlohmann/json（header-only）
+├── CMakeLists.txt            # CMake 构建配置
+├── Dockerfile                # 多阶段 Docker 构建
+├── docker-compose.yml        # 一键部署编排
 ├── frontend/                 # React 前端
+│   ├── nginx.conf            # Docker 部署用 nginx 配置
 │   └── src/
 │       ├── hooks/
 │       │   ├── useSSE.ts           # SSE 流式消费
@@ -122,3 +155,4 @@ data: [DONE]
 - [ ] Token 限流
 - [ ] 请求重试 + 熔断
 - [ ] 配置文件（端口、模型参数等）
+- [ ] 多模型/多厂商支持（OpenAI、Claude 等）

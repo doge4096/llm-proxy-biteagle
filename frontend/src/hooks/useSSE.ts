@@ -14,11 +14,14 @@ export interface SSECallbacks {
 interface UseSSEReturn {
   streaming: boolean
   error: string | null
-  sendMessage: (prompt: string, callbacks: SSECallbacks) => void
+  sendMessage: (prompt: string, callbacks: SSECallbacks, provider?: string) => void
   abort: () => void
 }
 
-const SSE_URL = 'http://localhost:8080/chat/stream'
+// 开发模式直连后端 8080，生产模式走 nginx 反向代理（相对路径）
+const SSE_URL = import.meta.env.PROD
+  ? '/chat/stream'
+  : 'http://localhost:8080/chat/stream'
 
 export function useSSE(): UseSSEReturn {
   const [streaming, setStreaming] = useState(false)
@@ -32,7 +35,7 @@ export function useSSE(): UseSSEReturn {
   }, [])
 
   const sendMessage = useCallback(
-    (prompt: string, callbacks: SSECallbacks) => {
+    (prompt: string, callbacks: SSECallbacks, provider?: string) => {
       const controller = new AbortController()
       abortRef.current = controller
 
@@ -54,7 +57,7 @@ export function useSSE(): UseSSEReturn {
       fetch(SSE_URL, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ prompt }),
+        body: JSON.stringify({ prompt, provider: provider || 'deepseek' }),
         signal: controller.signal,
       })
         .then(async (response) => {
